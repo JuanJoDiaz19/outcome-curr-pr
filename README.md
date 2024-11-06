@@ -3,6 +3,8 @@
 This project is the backend code part of a bigger project aimed to cover the administration facets of managing courses, academic competencies, performance indicators - and the relationship between these three -, scoring rubrics and other academic profiling tools, elements and statistics. The tech stack featured in this repository is listed down below.
 
 
+THIS IS A CHANGE
+
 ## Tech Stack
 
 Java 17
