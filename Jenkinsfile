@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/JuanJoDiaz19/outcome-curr.git', branch: 'main'
+                git url: 'https://github.com/JuanJoDiaz19/outcome-curr-pr.git', branch: 'main'
             }
         }
 
