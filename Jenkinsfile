@@ -6,10 +6,14 @@ pipeline {
         maven 'maven3'
     }
 
+    // triggers {
+    //     githubPullRequest()
+    // }
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/JuanJoDiaz19/outcome-curr.git', branch: 'main'
+                git url: 'https://github.com/JuanJoDiaz19/outcome-curr-pr.git', branch: 'main'
             }
         }
 
@@ -19,44 +23,43 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Unit Tests') {
             steps {
                 sh 'mvn test'
             }
         }
 
-        stage('Add Dokku Host Key') {
+        stage('Smoke Tests') {
             steps {
-                sh '''
-                    mkdir -p ~/.ssh
-                    ssh-keyscan -H helpme-god-juanjo.centralus.cloudapp.azure.com >> ~/.ssh/known_hosts
-                '''
+                // Aquí puedes definir los comandos específicos para las pruebas de humo
+                sh 'mvn verify -PsmokeTests'
             }
         }
 
         stage('Code Coverage') {
             steps {
+                // Genera reporte de cobertura de código con JaCoCo
                 jacoco execPattern: "**/target/jacoco.exec"
             }
-
         }
 
-        stage('Deploy to Dokku') {
+        stage('Docker Container Setup') {
             steps {
-                sshagent(['ssh-dokku']) {
-                    sh "git remote remove dokku || true"
-                    sh "git remote add dokku dokku@helpme-god-juanjo.centralus.cloudapp.azure.com:outcurr || true"
-                    sh "git push dokku HEAD:main -f"
-                }
+                // Configura la aplicación en un contenedor Docker para pruebas adicionales, si aplica
+                sh '''
+                    docker build -t outcurr-app .
+                    docker run -d --name outcurr-container -p 9092:9092 outcurr-app
+                '''
             }
         }
     }
 
-    // post {
-    //     always {
-    //         junit '**/target/surefire-reports/*.xml'
-    //         jacoco execPattern: '**/target/*.exec'
-    //         cleanWs() // Cleans up the workspace after build completion
-    //     }
-    // }
+    post {
+        always {
+            // Publica resultados de pruebas y limpia el workspace al finalizar
+            junit '**/target/surefire-reports/*.xml'
+            jacoco execPattern: '**/target/*.exec'
+            cleanWs()
+        }
+    }
 }
